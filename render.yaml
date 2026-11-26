@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: midlands-chess-league
+    runtime: python
+    plan: free
+    # One inline command (no script file), so Windows line endings / file permissions can't break the build.
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate --no-input && python manage.py enable_rls && python manage.py seed_defaults && (python manage.py createsuperuser --noinput || true)"
+    startCommand: "gunicorn config.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: DEBUG
+        value: "0"
+      - key: SECRET_KEY
+        generateValue: true
+      # Supabase "Session pooler" connection string (you paste it in the Render dashboard; never commit it).
+      - key: DATABASE_URL
+        sync: false
+      # YOU choose these. They create YOUR Super Admin on the first deploy (later deploys skip it).
+      - key: DJANGO_SUPERUSER_USERNAME
+        sync: false
+      - key: DJANGO_SUPERUSER_EMAIL
+        sync: false
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
