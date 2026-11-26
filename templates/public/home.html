@@ -7,7 +7,7 @@
     {% if messages %}<div class="pub-msgs" style="padding:12px 16px 0">{% include "partials/messages.html" %}</div>{% endif %}
     {% if transfer_window_open %}<div class="pub-banner">🔓 The transfer window is OPEN</div>{% endif %}
     <header class="pub-top">
-      <div class="pub-brand"><img src="{% static 'league/img/logo.png' %}" alt="Midlands Chess League logo" onerror="this.onerror=null;this.src='{% static 'league/img/logo.svg' %}'"><div><b>Midlands Chess League</b><small>Season {{ SEASON }}</small></div></div>
+      <div class="pub-brand"><img src="{% static 'league/img/logo.png' %}" alt="Midlands Chess League logo" onerror="this.onerror=null;this.src='{% static 'league/img/logo.svg' %}'"><div><b>Midlands Chess League</b><small> {{ SEASON }}Season</small></div></div>
       <div class="pub-actions">
       {% if user.is_authenticated %}{% if user.is_staff %}<a class="pub-staff" href="{% url 'league:console_dashboard' %}">Admin console</a>{% else %}<a class="pub-staff" href="{% url 'league:captain_dashboard' %}">My captain page</a>{% endif %}
         <form method="post" action="{% url 'league:logout' %}">{% csrf_token %}<button type="submit" class="pub-staff pub-staff--out">Sign out</button></form>
