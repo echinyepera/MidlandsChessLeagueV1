@@ -1,0 +1,14 @@
+{% load league_extras %}{% if f.status == "Completed" %}
+<details class="pub-card pub-fx"><summary class="pub-fx__btn">
+  <div class="pub-fx__meta"><span class="pub-badge">{% if f.match_date %}{{ f.match_date|date:"D j M Y" }}{% else %}Round {{ f.round_number }}{% endif %}</span><span>Tap for boards</span></div>
+  <div class="pub-fx__body"><div class="pub-side">{{ f.home_club }}<small>White</small></div><span class="pub-score">{{ f.home_board_points|pts }} – {{ f.away_board_points|pts }}</span><div class="pub-side pub-side--r">{{ f.away_club }}<small>Black</small></div></div>
+</summary>
+<table class="pub-boards"><tbody>{% for r in f.results.all %}<tr><td>Board {{ r.board_number }}</td><td><span class="pub-dot pub-dot--w"></span>{{ r.white_player }}<br><span class="pub-dot pub-dot--b"></span>{{ r.black_player }}</td><td>{{ r.result|res }}</td></tr>{% endfor %}</tbody></table>
+</details>
+{% else %}
+<article class="pub-card pub-fx"><div class="pub-fx__btn">
+  <div class="pub-fx__meta"><span class="pub-badge">{% if f.match_date %}{{ f.match_date|date:"D j M Y, H:i" }}{% else %}Date TBC{% endif %}</span><span>Round {{ f.round_number }}{% if f.venue %} · {{ f.venue }}{% endif %}</span></div>
+  <div class="pub-fx__body"><div class="pub-side">{{ f.home_club }}<small>White</small></div><span class="pub-vs">VS</span><div class="pub-side pub-side--r">{{ f.away_club }}<small>Black</small></div></div>
+  <div class="pub-chips"><span class="pub-chip {% if f.home_lineup_in %}ok{% endif %}">{{ f.home_club }}: {% if f.home_lineup_in %}lineup in{% else %}lineup pending{% endif %}</span><span class="pub-chip {% if f.away_lineup_in %}ok{% endif %}">{{ f.away_club }}: {% if f.away_lineup_in %}lineup in{% else %}lineup pending{% endif %}</span></div>
+</div></article>
+{% endif %}

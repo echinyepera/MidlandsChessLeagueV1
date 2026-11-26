@@ -1,0 +1,17 @@
+{% extends "console/base.html" %}
+{% block title %}WhatsApp export{% endblock %}
+{% block h1 %}{{ title }}{% endblock %}
+{% block sub %}Edit the message if you like, then share it to the league WhatsApp group. Free - no API.{% endblock %}
+{% block content %}
+<section class="card wa-box"><div class="card__body">
+  <div class="field"><label for="wa-text">Message</label><textarea class="input" id="wa-text" rows="14">{{ text }}</textarea><small>Your edits are used when you tap the button.</small></div>
+  <div class="row-actions">
+    <a class="btn btn-wa" id="wa-link" target="_blank" rel="noopener" href="https://wa.me/?text={{ text|urlencode:'' }}">📲 Share to WhatsApp</a>
+    <a class="btn btn-ghost" href="{% url back %}">← Back</a>
+  </div>
+</div></section>
+<script>
+  var ta = document.getElementById('wa-text'), a = document.getElementById('wa-link');
+  ta.addEventListener('input', function () { a.href = 'https://wa.me/?text=' + encodeURIComponent(ta.value); });
+</script>
+{% endblock %}

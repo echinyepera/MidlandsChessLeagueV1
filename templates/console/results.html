@@ -1,0 +1,43 @@
+{% extends "console/base.html" %}
+{% block title %}Results{% endblock %}
+{% block h1 %}Results{% endblock %}
+{% block sub %}Arbiter entry: the board-by-board result of a match ({{ boards }} boards).{% endblock %}
+{% block content %}
+<section class="card"><div class="card__head"><h2>Enter results</h2>{% if fixture and fixture.status == "Completed" %}<span class="badge badge--green">Completed</span>{% endif %}</div><div class="card__body">
+  <form method="get" class="field"><label for="fxsel">Fixture</label>
+    <select class="input" id="fxsel" name="fixture" onchange="this.form.submit()"><option value="">Select a fixture</option>
+      {% for f in fixtures %}<option value="{{ f.pk }}" {% if fixture and fixture.pk == f.pk %}selected{% endif %}>Round {{ f.round_number }} · {{ f.home_club }} vs {{ f.away_club }}{% if f.status == "Completed" %} ✓{% endif %}</option>{% endfor %}
+    </select><noscript><button class="btn btn-ghost btn-sm" type="submit">Load</button></noscript></form>
+  {% if not fixtures %}<div class="empty">No fixtures yet. Create them in the Fixtures tab first.</div>{% endif %}
+  {% if warning %}<div class="form-msg">{{ warning }}</div>{% endif %}
+  {% if fixture and form %}
+  <form method="post" novalidate>{% csrf_token %}<input type="hidden" name="fixture" value="{{ fixture.pk }}">{% include "partials/form_errors.html" %}
+    <p class="item__sub" style="margin-bottom:4px">White: <b>{{ fixture.home_club }}</b> · Black: <b>{{ fixture.away_club }}</b></p>
+    {% if fixture.status != "Completed" %}<p class="item__sub" style="margin-bottom:4px">Captain lineups: {{ fixture.home_club }} {% if fixture.home_lineup_in %}✓{% else %}pending{% endif %} · {{ fixture.away_club }} {% if fixture.away_lineup_in %}✓{% else %}pending{% endif %}. Submitted lineups are filled in for you.</p>{% endif %}
+    {% for row in form.rows %}<div class="board">
+      <div class="board__n">Board {{ row.n }}</div>
+      <div><label for="{{ row.w.id_for_label }}">White player</label>{{ row.w }}{{ row.w.errors }}</div>
+      <div><label for="{{ row.b.id_for_label }}">Black player</label>{{ row.b }}{{ row.b.errors }}</div>
+      <div><label for="{{ row.r.id_for_label }}">Result</label>{{ row.r }}{{ row.r.errors }}</div></div>{% endfor %}
+    <div class="live" id="live" aria-live="polite"></div>
+    <button class="btn btn-primary btn-block" type="submit">Save results</button></form>
+  <script>
+  (function () {
+    var N = {{ boards }}, home = "{{ fixture.home_club.name|escapejs }}", away = "{{ fixture.away_club.name|escapejs }}";
+    function f(n) { return n % 1 ? n.toFixed(1) : String(n); }
+    function update() {
+      var a = 0, b = 0, n = 0;
+      for (var i = 1; i <= N; i++) {
+        var v = document.getElementById('id_r' + i).value; if (!v) continue; n++;
+        if (v === '1-0') a += 1; else if (v === '0-1') b += 1; else { a += .5; b += .5; }
+      }
+      var tp = n < N ? '' : (a > b ? '  · team points 3–0' : a < b ? '  · team points 0–3' : '  · team points 1–1');
+      document.getElementById('live').textContent = home + ' ' + f(a) + ' – ' + f(b) + ' ' + away + '  (' + n + '/' + N + ' boards entered)' + tp;
+    }
+    document.querySelectorAll('select').forEach(function (s) { s.addEventListener('change', update); });
+    update();
+  })();
+  </script>
+  {% endif %}
+</div></section>
+{% endblock %}

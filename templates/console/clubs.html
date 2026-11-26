@@ -1,0 +1,23 @@
+{% extends "console/base.html" %}
+{% block title %}Clubs{% endblock %}
+{% block h1 %}Clubs &amp; Rosters{% endblock %}
+{% block sub %}Manage clubs and their players.{% endblock %}
+{% block content %}
+<div class="stack">
+  <div class="stats"><div class="stat"><b>{{ clubs|length }}</b><span>Clubs</span></div><div class="stat"><b>{{ n_players }}</b><span>Players</span></div><div class="stat"><b>{{ n_fixtures }}</b><span>Fixtures</span></div></div>
+  <section class="card"><div class="card__head"><h2>Add a club</h2></div><div class="card__body">
+    <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}{% include "partials/form_errors.html" %}
+      <div class="grid">
+        {% include "partials/field.html" with field=form.name %}
+        {% include "partials/field.html" with field=form.logo_url %}
+        {% include "partials/field.html" with field=form.logo full=True %}
+      </div>
+      <button class="btn btn-primary" type="submit">Add club</button>
+    </form></div></section>
+  <section class="card"><div class="card__head"><h2>Clubs ({{ clubs|length }})</h2></div><div class="card__body">
+    {% if clubs %}<div class="clubs">{% for c in clubs %}
+      <a class="club" href="{% url 'league:console_club' c.pk %}">{% include "partials/avatar.html" with club=c %}<span><span class="club__name">{{ c.name }}</span><br><span class="club__meta">{{ c.n_players }} player{{ c.n_players|pluralize }} · {% with cp=c.captain_profile %}{% if cp %}Captain: {{ cp.user.get_full_name|default:cp.user.email }}{% else %}No captain{% endif %}{% endwith %}</span></span><span class="club__go" aria-hidden="true">›</span></a>
+    {% endfor %}</div>{% else %}<div class="empty">No clubs yet. Add your first one above.</div>{% endif %}
+  </div></section>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "console/base.html" %}
+{% block title %}Transfers{% endblock %}
+{% block h1 %}Transfers{% endblock %}
+{% block sub %}Open or close the transfer window and move players between clubs.{% endblock %}
+{% block content %}
+<div class="stack">
+  <section class="card"><div class="card__head"><h2>Transfer window</h2><span class="badge {% if window_open %}badge--green{% endif %}">{% if window_open %}OPEN{% else %}CLOSED{% endif %}</span></div><div class="card__body">
+    <form method="post" novalidate>{% csrf_token %}<input type="hidden" name="action" value="toggle_window">
+      {% if not window_open %}<div class="grid">{% include "partials/field.html" with field=window_form.closes_on %}</div>{% endif %}
+      <div class="row-actions">
+        <button class="btn {% if window_open %}btn-danger{% else %}btn-open{% endif %}" type="submit">{% if window_open %}Close transfers{% else %}Open transfers{% endif %}</button>
+        <a class="btn btn-ghost" href="{% url 'league:export_transfer_window' %}">📲 WhatsApp announcement</a>
+      </div>
+      <p class="item__sub" style="margin-top:10px">Toggling opens a ready-to-send WhatsApp announcement. The public site shows a banner while the window is open.</p>
+    </form></div></section>
+
+  <section class="card"><div class="card__head"><h2>Process a transfer</h2></div><div class="card__body">
+    {% if not window_open %}<div class="form-msg info">The transfer window is currently closed. As Admin you can still process a transfer if the League has approved it.</div>{% endif %}
+    <form method="post" novalidate>{% csrf_token %}<input type="hidden" name="action" value="process_transfer">{% include "partials/form_errors.html" with form=form %}
+      <div class="grid">{% include "partials/field.html" with field=form.player full=True %}{% include "partials/field.html" with field=form.to_club %}</div>
+      <button class="btn btn-primary" type="submit">Process transfer</button></form></div></section>
+
+  <section class="card"><div class="card__head"><h2>Transfer history ({{ history|length }})</h2></div>
+    {% if history %}<ul class="list">{% for t in history %}<li class="item"><div class="item__main"><div class="item__title">{{ t.player.full_name }}</div><div class="item__sub">{{ t.from_club }} → {{ t.to_club }}</div></div><span class="badge badge--navy">{{ t.created_at|date:"j M Y H:i" }}</span></li>{% endfor %}</ul>
+    {% else %}<div class="empty">No transfers yet.</div>{% endif %}</section>
+</div>
+{% endblock %}

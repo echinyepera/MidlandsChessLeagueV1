@@ -1,0 +1,12 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>{% include "partials/head.html" %}<title>{% block title %}Captain portal{% endblock %} | Midlands Chess League</title></head>
+<body class="cap">
+  <main class="main" id="main" tabindex="-1">
+    <div class="capbar"><div class="capbar__brand"><img src="{% static 'league/img/logo.png' %}" alt="" onerror="this.onerror=null;this.src='{% static 'league/img/logo.svg' %}'"><div><b>Midlands Chess League</b><small>Captain portal</small></div></div>
+      <form method="post" action="{% url 'league:logout' %}">{% csrf_token %}<button type="submit" class="btn btn-sm btn-signout">Sign out</button></form></div>
+    {% include "partials/messages.html" %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

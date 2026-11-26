@@ -1,0 +1,40 @@
+{% extends "console/base.html" %}
+{% block title %}{{ club.name }}{% endblock %}
+{% block head %}{% endblock %}
+{% block content %}
+<div class="stack">
+  <div><a class="link" href="{% url 'league:console_clubs' %}">← All clubs</a></div>
+  <div class="roster-head">{% include "partials/avatar.html" with club=club big=True %}<div><h1>{{ club.name }}</h1><p>{{ players|length }} player{{ players|length|pluralize }}{% if avg_elo %} · avg ELO {{ avg_elo }}{% endif %}</p></div>
+    <form method="post" onsubmit="return confirm('Delete {{ club.name|escapejs }}?')">{% csrf_token %}<input type="hidden" name="action" value="delete_club"><button type="submit" class="btn btn-danger btn-sm">Delete club</button></form></div>
+
+  <section class="card"><div class="card__head"><h2>Club captain</h2>{% if captain %}<span class="badge badge--green">Assigned</span>{% else %}<span class="badge">Not set</span>{% endif %}</div><div class="card__body">
+    {% if captain %}<p class="item__sub" style="margin-bottom:12px"><b>{{ captain.user.get_full_name }}</b> · {{ captain.user.email }}{% if captain.must_change_password %} · <i>temporary password not yet changed</i>{% endif %}</p>
+      <div class="row-actions" style="margin-bottom:16px">
+        <form method="post">{% csrf_token %}<input type="hidden" name="action" value="reset_password"><button class="btn btn-ghost btn-sm" type="submit">New temporary password</button></form>
+        <form method="post" onsubmit="return confirm('Remove this captain account?')">{% csrf_token %}<input type="hidden" name="action" value="remove_captain"><button class="btn btn-danger btn-sm" type="submit">Remove captain</button></form>
+      </div>{% endif %}
+    <form method="post" novalidate>{% csrf_token %}<input type="hidden" name="action" value="set_captain">{% include "partials/form_errors.html" with form=captain_form %}
+      <div class="grid">{% include "partials/field.html" with field=captain_form.full_name %}{% include "partials/field.html" with field=captain_form.email %}</div>
+      <small class="item__sub" style="display:block;margin-bottom:10px">{% if captain %}Creating a new captain replaces the current account.{% else %}A temporary password is generated and shown once. Captains cannot self-register.{% endif %}</small>
+      <button class="btn btn-primary" type="submit">{% if captain %}Replace captain{% else %}Create captain account{% endif %}</button></form>
+  </div></section>
+
+  <section class="card"><div class="card__head"><h2>Add a player</h2></div><div class="card__body">
+    <form method="post" novalidate>{% csrf_token %}<input type="hidden" name="action" value="add_player">{% include "partials/form_errors.html" with form=player_form %}
+      <div class="grid">
+        {% include "partials/field.html" with field=player_form.first_name %}{% include "partials/field.html" with field=player_form.last_name %}
+        {% include "partials/field.html" with field=player_form.dob %}{% include "partials/field.html" with field=player_form.gender %}
+        {% include "partials/field.html" with field=player_form.fide_id %}{% include "partials/field.html" with field=player_form.phone %}
+        {% include "partials/field.html" with field=player_form.elo_rating %}
+        <div class="field"><label>Club</label><input class="input" value="{{ club.name }}" readonly><small>Filled in automatically from this roster.</small></div>
+      </div>
+      <button class="btn btn-primary" type="submit">Add player</button></form></div></section>
+
+  <section class="card"><div class="card__head"><h2>Roster</h2></div>
+    {% if players %}<div class="tablewrap"><table class="table"><thead><tr><th>Player</th><th>DOB</th><th>FIDE / ZCF ID</th><th>Phone</th><th class="num">ELO</th><th></th></tr></thead><tbody>
+      {% for p in players %}<tr><td class="nm">{{ p.full_name }}{% if p.status == "Transferred" %} <span class="badge">Transferred</span>{% endif %}<span class="sub">{{ p.gender }} · {{ p.age }} yrs</span></td><td>{{ p.dob|date:"D j M Y" }}</td><td>{{ p.fide_id|default:"n/a" }}</td><td>{{ p.phone|default:"n/a" }}</td><td class="num elo">{{ p.elo_rating }}</td>
+        <td class="num"><form method="post" onsubmit="return confirm('Remove {{ p.full_name|escapejs }} from the roster?')">{% csrf_token %}<input type="hidden" name="action" value="remove_player"><input type="hidden" name="player" value="{{ p.pk }}"><button class="btn btn-danger btn-sm" type="submit">Remove</button></form></td></tr>{% endfor %}
+    </tbody></table></div>{% else %}<div class="empty">No players yet. Use the form above to add the first one.</div>{% endif %}
+  </section>
+</div>
+{% endblock %}

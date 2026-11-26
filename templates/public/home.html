@@ -1,0 +1,81 @@
+{% load static league_extras %}<!DOCTYPE html>
+<html lang="en">
+<head>{% include "partials/head.html" %}<title>Midlands Chess League | Season {{ SEASON }}</title></head>
+<body class="cap pubmode">
+<div class="main">
+  <div class="pub">
+    {% if messages %}<div class="pub-msgs" style="padding:12px 16px 0">{% include "partials/messages.html" %}</div>{% endif %}
+    {% if transfer_window_open %}<div class="pub-banner">🔓 The transfer window is OPEN</div>{% endif %}
+    <header class="pub-top">
+      <div class="pub-brand"><img src="{% static 'league/img/logo.png' %}" alt="Midlands Chess League logo" onerror="this.onerror=null;this.src='{% static 'league/img/logo.svg' %}'"><div><b>Midlands Chess League</b><small>Season {{ SEASON }}</small></div></div>
+      <div class="pub-actions">
+      {% if user.is_authenticated %}{% if user.is_staff %}<a class="pub-staff" href="{% url 'league:console_dashboard' %}">Admin console</a>{% else %}<a class="pub-staff" href="{% url 'league:captain_dashboard' %}">My captain page</a>{% endif %}
+        <form method="post" action="{% url 'league:logout' %}">{% csrf_token %}<button type="submit" class="pub-staff pub-staff--out">Sign out</button></form>
+      {% else %}<a class="pub-staff" href="{% url 'league:login' %}">Captain / Admin sign-in</a>{% endif %}
+      </div>
+    </header>
+
+    <section class="pub-hero">
+      <div class="pub-hero__label">The Official Home of Midlands Chess</div>
+      <h1>Midlands Chess League</h1><hr class="pub-rule">
+      <p>Live Standings. Official Ratings. Tournament Pairings.</p>
+      <div class="pub-stats"><div class="pub-stat"><b>{{ n_clubs }}</b><span>Clubs</span></div><div class="pub-stat"><b>{{ n_players }}</b><span>Players</span></div><div class="pub-stat"><b>{{ n_completed }}/{{ n_fixtures }}</b><span>Played</span></div></div>
+      <a href="#standings" class="pub-cta">View Live Standings <span aria-hidden="true">→</span></a>
+    </section>
+
+    <div class="pub-content">
+      {% if notice_total %}<section class="pub-card" aria-labelledby="pubN"><div class="pub-card__head"><h2 id="pubN">League Notices</h2><span class="pub-badge">{{ notice_total }}</span></div>
+        <ul class="pub-notices">{% for n in notices %}<li><div class="pub-notice__t">{{ n.title }}</div><div class="pub-notice__d">{{ n.created_at|date:"j M Y, H:i" }}</div><p>{{ n.body }}</p></li>{% endfor %}</ul>
+        {% if notice_total > 3 %}<div class="pub-more"><a class="pub-link" href="{% if show_all_notices %}{% url 'league:home' %}{% else %}?notices=all{% endif %}">{% if show_all_notices %}Show fewer{% else %}Show all {{ notice_total }} notices{% endif %}</a></div>{% endif %}</section>{% endif %}
+
+      <div class="pub-grid">
+        <div class="pub-col">
+          <section class="pub-card" id="standings" aria-labelledby="pubT"><div class="pub-card__head"><h2 id="pubT">League Table</h2><span class="pub-badge">Live</span></div>
+            {% if table %}<table class="pub-table"><thead><tr><th>#</th><th>Club</th><th class="n">P</th><th class="n res-w">W</th><th class="n res-d">D</th><th class="n res-l">L</th><th class="n">BP</th><th class="n">Pts</th></tr></thead><tbody>
+              {% for r in table %}<tr><td><span class="pub-rank {% if r.rank == 1 and played_any %}pub-rank--1{% endif %}">{{ r.rank }}</span></td>
+                <td><span class="pub-clubcell">{% include "partials/avatar.html" with club=r.club %}<span>{{ r.club.name }}{% if r.rank == 1 and played_any %} <span role="img" aria-label="League leader">🏆</span>{% endif %}</span></span></td>
+                <td class="n">{{ r.played }}</td><td class="n res-w{% if r.won %} on{% endif %}">{{ r.won }}</td><td class="n res-d{% if r.drawn %} on{% endif %}">{{ r.drawn }}</td><td class="n res-l{% if r.lost %} on{% endif %}">{{ r.lost }}</td><td class="n">{{ r.board_for|pts }}</td><td class="n pub-pts">{{ r.points }}</td></tr>{% endfor %}</tbody></table>
+            {% else %}<div class="pub-empty">No clubs have been registered yet.</div>{% endif %}
+            <p class="pub-note">Pts = match points (win 3, draw 1, loss 0). BP = board (game) points (win 1, draw ½). Clubs level on points are ranked by board points.</p></section>
+
+          <section class="pub-card" aria-labelledby="pubR"><div class="pub-card__head"><h2 id="pubR">Top Rated Players</h2><span class="pub-badge">ELO</span></div>
+            {% if top_players %}<table class="pub-table"><tbody>{% for p in top_players %}<tr><td><span class="pub-rank {% if forloop.first %}pub-rank--1{% endif %}">{{ forloop.counter }}</span></td><td><span class="pub-clubcell"><span>{{ p.full_name }}<span class="pub-sub">{{ p.club }}</span></span></span></td><td class="n pub-elo">{{ p.elo_rating }}</td></tr>{% endfor %}</tbody></table>
+            {% else %}<div class="pub-empty">No players registered yet.</div>{% endif %}</section>
+        </div>
+
+        <section aria-labelledby="pubF"><h2 class="pub-h" id="pubF">Fixtures &amp; Results</h2>
+          <div class="seg" role="group" aria-label="Fixtures or results">
+            <a href="?tab=upcoming#pubF" {% if tab == "upcoming" %}aria-current="true"{% endif %}>Upcoming ({{ n_upcoming }})</a>
+            <a href="?tab=results#pubF" {% if tab == "results" %}aria-current="true"{% endif %}>Results ({{ n_completed }})</a></div>
+          <div class="pub-fxlist">{% for f in fixtures %}{% include "partials/pub_fixture.html" %}{% empty %}<div class="pub-card"><div class="pub-empty">{% if tab == "results" %}No results yet.{% else %}No upcoming fixtures.{% endif %}</div></div>{% endfor %}</div>
+        </section>
+      </div>
+
+      <section class="pub-sponsor" id="sponsor" aria-labelledby="pubS">
+        <div class="pub-sponsor__label">Call for Sponsorship &amp; Investment</div>
+        <h2 id="pubS">{{ site_info.sponsor_title }}</h2><hr class="pub-rule">
+        <p>{{ site_info.sponsor_message|linebreaksbr }}</p>
+        {% if site_info.whatsapp or site_info.email %}<div class="pub-sponsor__cta">
+          {% if site_info.whatsapp %}<a class="pub-cta" href="https://wa.me/{{ site_info.whatsapp_digits }}?text=Hello%2C%20I%20am%20interested%20in%20sponsoring%20or%20investing%20in%20the%20Midlands%20Chess%20League." target="_blank" rel="noopener">WhatsApp {{ site_info.whatsapp }}</a>{% endif %}
+          {% if site_info.email %}<a class="pub-cta pub-cta--ghost" href="mailto:{{ site_info.email }}?subject=Sponsorship%20%26%20Investment%20Enquiry">Email {{ site_info.email }}</a>{% endif %}
+        </div>{% endif %}
+      </section>
+
+      {% if site_info.vision or site_info.whatsapp or site_info.email %}<div class="pub-grid">
+        {% if site_info.vision %}<section class="pub-card" aria-labelledby="pubV"><div class="pub-card__head"><h2 id="pubV">Our Vision</h2></div><p class="pub-vision">{{ site_info.vision }}</p></section>{% endif %}
+        {% if site_info.whatsapp or site_info.email %}<section class="pub-card" id="contact" aria-labelledby="pubC"><div class="pub-card__head"><h2 id="pubC">Get in Touch</h2></div>
+          <div class="pub-contact">
+            {% if site_info.whatsapp %}<a href="https://wa.me/{{ site_info.whatsapp_digits }}" target="_blank" rel="noopener"><span class="pub-contact__ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.7-5A8.5 8.5 0 1 1 21 11.5z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1.3-1.3-2-1-1 .7a4 4 0 0 1-2-2l.7-1-1-2z"/></svg></span><span><small>WhatsApp</small><b>{{ site_info.whatsapp }}</b></span></a>{% endif %}
+            {% if site_info.email %}<a href="mailto:{{ site_info.email }}"><span class="pub-contact__ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span><span><small>Email</small><b>{{ site_info.email }}</b></span></a>{% endif %}
+          </div></section>{% endif %}
+      </div>{% endif %}
+
+      {% if leaders or developer %}<section aria-labelledby="pubL"><h2 class="pub-h" id="pubL">League Leadership</h2>
+        {% if leaders %}<div class="pub-people">{% for o in leaders %}<article class="pub-person">{% include "partials/photo.html" with o=o cls="pub-photo" %}<div class="pub-person__role">{{ o.role }}</div><div class="pub-person__name">{{ o.name }}</div></article>{% endfor %}</div>{% endif %}
+        {% if developer %}<article class="pub-dev">{% include "partials/photo.html" with o=developer cls="pub-photo pub-photo--sm" %}<div><div class="pub-person__role">{{ developer.role }}</div><div class="pub-person__name">{{ developer.name }}</div></div></article>{% endif %}</section>{% endif %}
+    </div>
+    <footer class="pub-footer">© {% now "Y" %} Midlands Chess League{% if developer %} · Platform Developer: {{ developer.name }}{% endif %}{% if not user.is_authenticated %} · <a href="{% url 'league:login' %}">Captain / Admin sign-in</a>{% endif %}</footer>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,1 @@
+{% if messages %}<div class="msgs">{% for m in messages %}<div class="{% if m.level_tag == 'error' %}form-msg{% elif m.level_tag == 'warning' %}form-msg info{% else %}lu-ok{% endif %}" role="status">{{ m }}</div>{% endfor %}</div>{% endif %}

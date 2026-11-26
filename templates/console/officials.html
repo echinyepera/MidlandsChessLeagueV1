@@ -1,0 +1,15 @@
+{% extends "console/base.html" %}
+{% block title %}Officials{% endblock %}
+{% block h1 %}Officials{% endblock %}
+{% block sub %}Edit the leadership shown on the public website.{% endblock %}
+{% block content %}
+<div class="stack"><p class="item__sub">These people appear under “League Leadership” on the public website. Add a photo URL when you have one; until then a placeholder is shown.</p>
+  {% if pairs %}<div class="off-grid">{% for o, f in pairs %}
+    <section class="card"><div class="card__head"><h2>{{ o.role }}</h2><span class="badge {% if o.kind == 'developer' %}badge--navy{% endif %}">{{ o.get_kind_display }}</span></div><div class="card__body">
+      <form method="post" novalidate>{% csrf_token %}<input type="hidden" name="official" value="{{ o.pk }}">{% include "partials/form_errors.html" with form=f %}
+        <div class="off-top">{% include "partials/photo.html" with o=o cls="pub-photo pub-photo--sm" %}<p>{% if o.photo_url %}Photo set.{% else %}No photo yet. A placeholder is shown.{% endif %}</p></div>
+        {% include "partials/field.html" with field=f.name %}{% include "partials/field.html" with field=f.role %}{% include "partials/field.html" with field=f.photo_url %}
+        <button class="btn btn-primary" type="submit">Save</button></form></div></section>{% endfor %}</div>
+  {% else %}<section class="card"><div class="empty">No officials yet. Run <code>python manage.py seed_defaults</code> to create the default leadership entries.</div></section>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "console/base.html" %}
+{% block title %}Notices{% endblock %}
+{% block h1 %}Notices{% endblock %}
+{% block sub %}Publish announcements for the public bulletin.{% endblock %}
+{% block content %}
+<div class="stack">
+  <section class="card"><div class="card__head"><h2>New notice</h2></div><div class="card__body">
+    <form method="post" novalidate>{% csrf_token %}<input type="hidden" name="action" value="add_notice">{% include "partials/form_errors.html" %}
+      {% include "partials/field.html" with field=form.title %}{% include "partials/field.html" with field=form.body %}
+      <label class="item__sub" style="display:block;margin-bottom:12px">{{ form.published }} Publish immediately (untick to save as a draft)</label>
+      <button class="btn btn-primary" type="submit">Save notice</button></form></div></section>
+  <section class="card"><div class="card__head"><h2>All notices ({{ notices|length }})</h2></div>
+    {% if notices %}<ul class="list">{% for n in notices %}<li class="item item--top"><div class="item__main"><div class="item__title">{{ n.title }} {% if n.published %}<span class="badge badge--green">Published</span>{% else %}<span class="badge">Draft</span>{% endif %}</div><div class="item__sub">{{ n.created_at|date:"j M Y H:i" }}</div><div class="item__body">{{ n.body }}</div></div>
+      <div class="row-actions"><form method="post">{% csrf_token %}<input type="hidden" name="action" value="toggle_publish"><input type="hidden" name="notice" value="{{ n.pk }}"><button class="btn btn-ghost btn-sm" type="submit">{% if n.published %}Unpublish{% else %}Publish{% endif %}</button></form>
+      <form method="post" onsubmit="return confirm('Delete this notice?')">{% csrf_token %}<input type="hidden" name="action" value="delete_notice"><input type="hidden" name="notice" value="{{ n.pk }}"><button class="btn btn-danger btn-sm" type="submit">Delete</button></form></div></li>{% endfor %}</ul>
+    {% else %}<div class="empty">No notices yet.</div>{% endif %}</section>
+</div>
+{% endblock %}

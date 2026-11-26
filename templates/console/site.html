@@ -1,0 +1,13 @@
+{% extends "console/base.html" %}
+{% block title %}Site info{% endblock %}
+{% block h1 %}Site Info &amp; Sponsorship{% endblock %}
+{% block sub %}Contact details and the call for sponsors &amp; investors shown on the public website.{% endblock %}
+{% block content %}
+<section class="card"><div class="card__head"><h2>Vision, contacts &amp; sponsorship call</h2></div><div class="card__body">
+  <form method="post" novalidate>{% csrf_token %}{% include "partials/form_errors.html" %}
+    {% include "partials/field.html" with field=form.vision %}
+    <div class="grid">{% include "partials/field.html" with field=form.whatsapp %}{% include "partials/field.html" with field=form.email %}</div>
+    <p class="item__sub" style="margin:4px 0 12px">The sponsorship card on the public site uses the WhatsApp number and email above, so changing a contact here updates it everywhere.</p>
+    {% include "partials/field.html" with field=form.sponsor_title %}{% include "partials/field.html" with field=form.sponsor_message %}
+    <button class="btn btn-primary" type="submit">Save</button></form></div></section>
+{% endblock %}

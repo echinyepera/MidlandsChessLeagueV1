@@ -1,0 +1,33 @@
+{% extends "captain/base.html" %}
+{% load league_extras %}
+{% block content %}
+{% if profile.must_change_password %}<div class="form-msg info">You are using a temporary password. <a class="link" href="{% url 'league:captain_password' %}">Choose your own password now →</a></div>{% endif %}
+<div class="page-head"><h1>Welcome, {{ user.get_full_name|default:user.email }}</h1><p>Captain of {{ club.name }}</p></div>
+<div class="cap-grid">
+  <div class="stack">
+    <section class="card"><div class="card__head"><h2>Next fixture</h2>
+      {% if next %}{% if lineup %}<span class="badge badge--green">Lineup submitted</span>{% else %}<span class="badge" style="background:#fde8e8;color:#991b1b">Lineup needed</span>{% endif %}{% endif %}</div>
+      {% if next %}<div class="card__body">
+        <div class="item__title" style="font-size:1.05rem">{{ club.name }} vs {{ opponent.name }}</div>
+        <div class="item__sub" style="margin-bottom:6px">{% if next.match_date %}{{ next.match_date|date:"D j M Y, H:i" }}{% else %}Date to be confirmed{% endif %}{% if next.venue %} · {{ next.venue }}{% endif %} · Round {{ next.round_number }} · You play <b>{% if i_am_home %}White{% else %}Black{% endif %}</b> on all boards</div>
+        {% if next.lineup_deadline %}<div class="item__sub" style="margin-bottom:6px">Lineup deadline: {{ next.lineup_deadline|date:"D j M, H:i" }}</div>{% endif %}
+        <div class="fx__status" style="margin:0 0 14px"><span class="badge {% if opp_in %}badge--navy{% endif %}">Opponent lineup: {% if opp_in %}submitted{% else %}pending{% endif %}</span></div>
+        {% if lineup %}
+          <div class="lu-ok">Lineup Submitted (Pending Arbiter). It is locked - ask the League Admin if you need to change it.</div>
+          <table class="table" style="min-width:0"><tbody>{% for e in lineup.entries.all %}<tr><td><b>Board {{ e.board_number }}</b></td><td>{{ e.player.full_name }}</td><td class="num elo">{{ e.player.elo_rating }}</td></tr>{% endfor %}</tbody></table>
+        {% else %}
+          <a class="btn btn-red btn-block" href="{% url 'league:submit_lineup' next.pk %}">Submit Lineup for Round {{ next.round_number }}</a>
+        {% endif %}
+      </div>{% else %}<div class="empty">No upcoming fixtures for your club yet.</div>{% endif %}
+    </section>
+    <section class="card"><div class="card__head"><h2>Recent results</h2></div>
+      {% if recent %}<ul class="list">{% for r in recent %}<li class="item"><div class="item__main"><div class="item__title">vs {{ r.opponent }}</div><div class="item__sub">{% if r.fixture.match_date %}{{ r.fixture.match_date|date:"D j M Y" }}{% else %}Round {{ r.fixture.round_number }}{% endif %}</div></div><span class="score">{{ r.me|pts }} – {{ r.them|pts }}</span>
+        {% if r.outcome == "win" %}<span class="badge badge--green">Win</span>{% elif r.outcome == "loss" %}<span class="badge" style="background:#fde8e8;color:#991b1b">Loss</span>{% else %}<span class="badge badge--navy">Draw</span>{% endif %}</li>{% endfor %}</ul>
+      {% else %}<div class="empty">No results yet.</div>{% endif %}</section>
+  </div>
+  <div class="stack"><section class="card"><div class="card__head"><h2>Your squad</h2><span class="badge badge--navy">{{ squad|length }} players</span></div>
+    {% if squad %}<div class="tablewrap"><table class="table" style="min-width:0"><thead><tr><th>Player</th><th>ID</th><th class="num">ELO</th></tr></thead><tbody>
+      {% for p in squad %}<tr><td class="nm">{{ p.full_name }}</td><td>{{ p.fide_id|default:"n/a" }}</td><td class="num elo">{{ p.elo_rating }}</td></tr>{% endfor %}</tbody></table></div>
+    {% else %}<div class="empty">No players yet.</div>{% endif %}</section></div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "console/base.html" %}
+{% load league_extras %}
+{% block title %}Fixtures{% endblock %}
+{% block h1 %}Fixtures{% endblock %}
+{% block sub %}Generate the season, set dates, and manage lineups.{% endblock %}
+{% block content %}
+<div class="stack">
+  <section class="card"><div class="card__head"><h2>Fixture generator</h2></div><div class="card__body">
+    <form method="post" style="margin-bottom:18px">{% csrf_token %}<input type="hidden" name="action" value="generate_season">
+      <p class="item__sub" style="margin-bottom:10px">Round-robin across all clubs. Dates are left TBD for you to set. Odd club counts get an automatic Bye.</p>
+      <label class="item__sub" style="display:block;margin-bottom:10px"><input type="checkbox" name="double"> Home &amp; away (double round-robin)</label>
+      <button class="btn btn-primary" type="submit" onclick="return confirm('Generate the season fixtures for all clubs?')">Generate season fixtures</button></form>
+    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="generate_catchup">
+      <p class="item__sub" style="margin-bottom:10px">Late-joining club? Create its missing pairings (they share one new round so you can put them all on the special catch-up date).</p>
+      <div class="sched" style="grid-template-columns:1fr auto"><select class="input" name="club" required><option value="">Select club</option>{% for c in clubs %}<option value="{{ c.pk }}">{{ c.name }}</option>{% endfor %}</select><button class="btn btn-ghost" type="submit">Generate catch-up fixtures</button></div></form>
+  </div></section>
+
+  <section class="card"><div class="card__head"><h2>Create a single fixture</h2></div><div class="card__body">
+    <form method="post" novalidate>{% csrf_token %}<input type="hidden" name="action" value="add_fixture">{% include "partials/form_errors.html" with form=add_form %}
+      <div class="grid">
+        {% include "partials/field.html" with field=add_form.home_club %}{% include "partials/field.html" with field=add_form.away_club %}
+        {% include "partials/field.html" with field=add_form.round_number %}{% include "partials/field.html" with field=add_form.venue %}
+        {% include "partials/field.html" with field=add_form.match_date full=True %}
+      </div>
+      <button class="btn btn-primary" type="submit">Create fixture</button></form></div></section>
+
+  {% for r in rounds %}
+  <section class="card">
+    <div class="round-head"><h2>Round {{ r.number }}{% if r.catchup %} <span class="badge badge--navy">Catch-up</span>{% endif %}{% if r.tbd %} <span class="badge">{{ r.tbd }} TBD</span>{% endif %}</h2>
+      <div class="row-actions"><a class="btn btn-ghost btn-sm" href="{% url 'league:export_fixtures' r.number %}">📲 Fixtures</a>{% if r.any_complete %}<a class="btn btn-ghost btn-sm" href="{% url 'league:export_results' r.number %}">📲 Results</a>{% endif %}</div></div>
+    <form method="post" class="bulk">{% csrf_token %}<input type="hidden" name="action" value="set_round_schedule"><input type="hidden" name="round" value="{{ r.number }}">
+      <div class="sched"><input class="input" name="venue" placeholder="Venue (optional)" aria-label="Venue for the whole round"><input class="input" type="datetime-local" name="match_date" required aria-label="Date and time for the whole round"><button class="btn btn-ghost btn-sm" type="submit">Set whole round</button></div></form>
+    <ul class="list">{% for f in r.fixtures %}
+      <li class="item item--col">
+        <div class="item__row"><div class="item__main"><div class="item__title">{{ f.home_club }} vs {{ f.away_club }}</div>
+          <div class="item__sub">{% if f.match_date %}{{ f.match_date|date:"D j M Y, H:i" }}{% else %}Date TBD{% endif %}{% if f.venue %} · {{ f.venue }}{% endif %}</div></div>
+          {% if f.status == "Completed" %}<span class="score">{{ f.home_board_points|pts }} – {{ f.away_board_points|pts }}</span><span class="badge badge--green">Team pts {{ f.home_team_points }}–{{ f.away_team_points }}</span>{% endif %}
+          <form method="post" class="inline" onsubmit="return confirm('Delete this fixture?')">{% csrf_token %}<input type="hidden" name="action" value="delete_fixture"><input type="hidden" name="fixture" value="{{ f.pk }}"><button class="btn btn-danger btn-sm" type="submit">Delete</button></form></div>
+        {% if f.status != "Completed" %}<div class="fx__status">
+          {% with hl=f.home_lineup_in al=f.away_lineup_in %}
+          <span class="badge {% if hl %}badge--green{% endif %}">{{ f.home_club }}: {% if hl %}lineup in{% else %}pending{% endif %}</span>
+          <span class="badge {% if al %}badge--green{% endif %}">{{ f.away_club }}: {% if al %}lineup in{% else %}pending{% endif %}</span>{% endwith %}
+          {% for l in f.lineups.all %}{% if l.locked %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="unlock_lineup"><input type="hidden" name="lineup" value="{{ l.pk }}"><button class="btn btn-ghost btn-sm" type="submit">Unlock {{ l.club.name }}</button></form>{% endif %}{% endfor %}
+        </div>{% else %}<div class="fx__status"><a class="link" href="{% url 'league:export_board_results' f.pk %}">📲 Board-by-board results</a></div>{% endif %}
+        <form method="post" class="sched">{% csrf_token %}<input type="hidden" name="action" value="set_schedule"><input type="hidden" name="fixture" value="{{ f.pk }}">
+          <input class="input" name="venue" value="{{ f.venue }}" placeholder="Venue" aria-label="Venue"><input class="input" type="datetime-local" name="match_date" value="{{ f.match_date|date:'Y-m-d\TH:i' }}" aria-label="Date and time"><button class="btn btn-ghost btn-sm" type="submit">Save</button></form>
+      </li>{% endfor %}
+    </ul>
+  </section>
+  {% empty %}
+  <section class="card"><div class="empty">No fixtures yet. Generate the season above.</div></section>
+  {% endfor %}
+</div>
+{% endblock %}

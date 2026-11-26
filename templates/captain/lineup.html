@@ -1,0 +1,19 @@
+{% extends "captain/base.html" %}
+{% block title %}Lineup{% endblock %}
+{% block content %}
+<div class="stack" style="max-width:640px;margin:0 auto">
+  <div><a class="link" href="{% url 'league:captain_dashboard' %}">← Back to dashboard</a></div>
+  <section class="card"><div class="card__head"><h2>Round {{ fixture.round_number }}: {{ club.name }} vs {{ opponent.name }}</h2>{% if locked %}<span class="badge badge--green">Locked</span>{% endif %}</div><div class="card__body">
+    <p class="item__sub" style="margin-bottom:14px">{% if fixture.match_date %}{{ fixture.match_date|date:"D j M Y, H:i" }}{% else %}Date to be confirmed{% endif %}. You choose the board order - it is never sorted by rating for you.</p>
+    {% if locked %}
+      <div class="lu-ok">Lineup submitted. It is locked; only the League Admin can unlock it for edits.</div>
+      <table class="table" style="min-width:0"><tbody>{% for e in entries %}<tr><td><b>Board {{ e.board_number }}</b></td><td>{{ e.player.full_name }}</td><td class="num elo">{{ e.player.elo_rating }}</td></tr>{% endfor %}</tbody></table>
+    {% else %}
+      <form method="post" novalidate>{% csrf_token %}{% include "partials/form_errors.html" %}
+        {% for field in form.boards %}<div class="lu-row"><span>Board {{ forloop.counter }}</span><div>{{ field }}{% for e in field.errors %}<small class="err">{{ e }}</small>{% endfor %}</div></div>{% endfor %}
+        <p class="item__sub" style="margin:6px 0 12px">Once you submit, the lineup is locked.</p>
+        <button class="btn btn-primary btn-block" type="submit" onclick="return confirm('Submit and lock this lineup?')">Submit lineup</button></form>
+    {% endif %}
+  </div></section>
+</div>
+{% endblock %}

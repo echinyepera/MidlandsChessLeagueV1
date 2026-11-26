@@ -1,0 +1,39 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>{% include "partials/head.html" %}<title>{% block title %}Admin{% endblock %} | Midlands Chess League</title></head>
+<body>
+  <aside class="side">
+    <div class="side__brand">
+      <img src="{% static 'league/img/logo.png' %}" alt="" onerror="this.onerror=null;this.src='{% static 'league/img/logo.svg' %}'">
+      <div><b>Midlands Chess League</b><small>Admin dashboard</small></div>
+    </div>
+    <nav class="nav" aria-label="Admin sections">
+      <a href="{% url 'league:console_dashboard' %}" {% if tab == "dashboard" %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true">{% include "partials/icon.html" with name="dashboard" %}</svg>Dashboard</a>
+      <a href="{% url 'league:console_clubs' %}" {% if tab == "clubs" %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true">{% include "partials/icon.html" with name="clubs" %}</svg>Clubs &amp; Rosters</a>
+      <a href="{% url 'league:console_transfers' %}" {% if tab == "transfers" %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true">{% include "partials/icon.html" with name="transfers" %}</svg>Transfers</a>
+      <a href="{% url 'league:console_fixtures' %}" {% if tab == "fixtures" %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true">{% include "partials/icon.html" with name="fixtures" %}</svg>Fixtures</a>
+      <a href="{% url 'league:console_results' %}" {% if tab == "results" %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true">{% include "partials/icon.html" with name="results" %}</svg>Results</a>
+      <a href="{% url 'league:console_notices' %}" {% if tab == "notices" %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true">{% include "partials/icon.html" with name="notices" %}</svg>Notices</a>
+      <a href="{% url 'league:console_officials' %}" {% if tab == "officials" %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true">{% include "partials/icon.html" with name="officials" %}</svg>Officials</a>
+      <a href="{% url 'league:console_site' %}" {% if tab == "site" %}aria-current="page"{% endif %}><svg viewBox="0 0 24 24" aria-hidden="true">{% include "partials/icon.html" with name="site" %}</svg>Site Info</a>
+      <span class="nav-sep nav-extra"></span>
+      <a class="nav-extra" href="{% url 'league:home' %}">Public site</a>
+      <form method="post" action="{% url 'league:logout' %}">{% csrf_token %}<button type="submit" class="nav-extra signout">Sign out</button></form>
+    </nav>
+    <div class="side__foot">
+      <a href="{% url 'league:home' %}">View public site →</a>
+      <a href="{% url 'admin:index' %}">Data admin →</a>
+      <form method="post" action="{% url 'league:logout' %}">{% csrf_token %}<button type="submit" class="signout">Sign out</button></form>
+      <small>Signed in as {{ user.get_username }}</small>
+    </div>
+  </aside>
+  <main class="main" id="main" tabindex="-1">
+    <div class="topbar"><span>Signed in as <b>{{ user.get_username }}</b></span>
+      <a class="btn btn-sm btn-ghost" href="{% url 'league:home' %}">🌐 View public site</a>
+      <form method="post" action="{% url 'league:logout' %}">{% csrf_token %}<button type="submit" class="btn btn-sm btn-signout">Sign out</button></form></div>
+    {% include "partials/messages.html" %}
+    {% block head %}<div class="page-head"><h1>{% block h1 %}{% endblock %}</h1><p>{% block sub %}{% endblock %}</p></div>{% endblock %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>{% include "partials/head.html" %}<title>Sign in | Midlands Chess League</title></head>
+<body class="cap">
+  <main class="main">
+    <div class="capbar"><div class="capbar__brand"><img src="{% static 'league/img/logo.png' %}" alt="" onerror="this.onerror=null;this.src='{% static 'league/img/logo.svg' %}'"><div><b>Midlands Chess League</b><small>Captain / Admin sign-in</small></div></div>
+      <a class="btn btn-sm capbar__btn" href="{% url 'league:home' %}">← Back</a></div>
+    {% include "partials/messages.html" %}
+    <div class="login"><section class="card"><div class="card__head"><h2>Sign in</h2></div><div class="card__body">
+      <form method="post" novalidate>{% csrf_token %}
+        {% for e in form.non_field_errors %}<div class="form-msg" role="alert">{{ e }}</div>{% endfor %}
+        <div class="field"><label for="{{ form.username.id_for_label }}">Email or username</label><input class="input" type="text" name="username" id="{{ form.username.id_for_label }}" autocomplete="username" autofocus required></div>
+        <div class="field"><label for="{{ form.password.id_for_label }}">Password</label><input class="input" type="password" name="password" id="{{ form.password.id_for_label }}" autocomplete="current-password" required></div>
+        <input type="hidden" name="next" value="{{ next }}">
+        <button class="btn btn-primary btn-block" type="submit">Sign in</button></form>
+      <p class="item__sub" style="margin-top:12px">Captains: use the email and temporary password from the League Admin. Accounts cannot be self-registered.</p>
+    </div></section></div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{% extends "console/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block h1 %}Dashboard{% endblock %}
+{% block sub %}Smart alerts and league at a glance.{% endblock %}
+{% block content %}
+<div class="stack">
+  <div class="stats">
+    <div class="stat"><b>{{ stats.clubs }}</b><span>Clubs</span></div>
+    <div class="stat"><b>{{ stats.players }}</b><span>Players</span></div>
+    <div class="stat"><b>{{ stats.pending_lineups }}</b><span>Pending lineups</span></div>
+  </div>
+  <section class="card"><div class="card__head"><h2>Smart alerts</h2><span class="badge badge--navy">{{ alerts|length }}</span></div><div class="card__body">
+    {% if alerts %}<div class="alerts">{% for level, text in alerts %}<div class="alert alert--{{ level }}">{% if level == "red" %}🔴{% elif level == "yellow" %}🟡{% else %}🟢{% endif %} {{ text }}</div>{% endfor %}</div>
+    {% else %}<div class="empty">Nothing needs your attention right now.</div>{% endif %}
+  </div></section>
+  <section class="card"><div class="card__head"><h2>Top 3 players by ELO</h2></div>
+    {% if stats.top3 %}<ul class="list">{% for p in stats.top3 %}<li class="item"><div class="item__main"><div class="item__title">{{ forloop.counter }}. {{ p.full_name }}</div><div class="item__sub">{{ p.club }}</div></div><span class="elo">{{ p.elo_rating }}</span></li>{% endfor %}</ul>
+    {% else %}<div class="empty">No players yet.</div>{% endif %}
+  </section>
+</div>
+{% endblock %}
